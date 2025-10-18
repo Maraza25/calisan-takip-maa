@@ -28,10 +28,11 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ date, entries });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('GET /api/attendance error:', error);
     return NextResponse.json(
-      { error: 'Yoklama kayıtları yüklenirken hata oluştu', details: error.message },
+      { error: 'Yoklama kayıtları yüklenirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }

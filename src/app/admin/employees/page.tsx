@@ -101,8 +101,9 @@ export default function EmployeesPage() {
       setTimeout(() => {
         handleCloseModal();
       }, 1000);
-    } catch (err: any) {
-      setError(err.message || 'İşlem başarısız');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'İşlem başarısız');
     }
   };
 
@@ -119,8 +120,9 @@ export default function EmployeesPage() {
       setSuccessMessage('Çalışan silindi');
       await fetchEmployees();
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (err: any) {
-      setError(err.message || 'Silme başarısız');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Silme başarısız');
       setTimeout(() => setError(''), 3000);
     }
   };

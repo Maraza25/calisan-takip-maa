@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Silinmişleri hariç tut (varsayılan)
     if (!includeDeleted) {
-      query = query.where('isDeleted', '!=', true) as any;
+      query = query.where('isDeleted', '!=', true) as FirebaseFirestore.Query<FirebaseFirestore.DocumentData>;
     }
 
     const snapshot = await query.orderBy('createdAt', 'desc').get();
@@ -26,10 +26,11 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ employees });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('GET /api/employees error:', error);
     return NextResponse.json(
-      { error: 'Çalışanlar yüklenirken hata oluştu', details: error.message },
+      { error: 'Çalışanlar yüklenirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }
@@ -56,6 +57,12 @@ export async function POST(request: NextRequest) {
       .get();
 
     const now = FieldValue.serverTimestamp();
+    type UpdateData = {
+      fullName?: string;
+      tc?: string;
+      isDeleted?: boolean;
+      updatedAt: FirebaseFirestore.FieldValue;
+    };
 
     if (!existingQuery.empty) {
       // Var olan kaydı aktive et
@@ -99,10 +106,11 @@ export async function POST(request: NextRequest) {
         message: 'Yeni çalışan eklendi',
       }, { status: 201 });
     }
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('POST /api/employees error:', error);
     return NextResponse.json(
-      { error: 'Çalışan eklenirken hata oluştu', details: error.message },
+      { error: 'Çalışan eklenirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }
@@ -158,10 +166,11 @@ export async function PATCH(request: NextRequest) {
       },
       message: 'Çalışan güncellendi',
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('PATCH /api/employees error:', error);
     return NextResponse.json(
-      { error: 'Çalışan güncellenirken hata oluştu', details: error.message },
+      { error: 'Çalışan güncellenirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }
@@ -189,10 +198,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({
       message: 'Çalışan silindi (soft delete)',
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('DELETE /api/employees error:', error);
     return NextResponse.json(
-      { error: 'Çalışan silinirken hata oluştu', details: error.message },
+      { error: 'Çalışan silinirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }

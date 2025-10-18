@@ -17,7 +17,7 @@ const getAuthClient = () => {
 };
 
 // Upsert: Mevcut satırı güncelle veya yeni satır ekle (tarih grupları arası 3 boş satır)
-export async function upsertToSheet(rows: any[][]) {
+export async function upsertToSheet(rows: string[][]) {
   try {
     const auth = getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
@@ -39,7 +39,7 @@ export async function upsertToSheet(rows: any[][]) {
     const headerRow = existingRows.length > 0 ? existingRows[0] : ['Tarih', 'Çalışan ID', 'Ad Soyad', 'Durum', 'Kaynak', 'Düzenleme Zamanı'];
     
     // Mevcut verileri tarihe göre grupla (başlık hariç)
-    const dateGroups: { [date: string]: any[] } = {};
+    const dateGroups: { [date: string]: string[][] } = {};
     
     for (let i = 1; i < existingRows.length; i++) {
       const row = existingRows[i];
@@ -89,7 +89,7 @@ export async function upsertToSheet(rows: any[][]) {
     const sortedDates = Object.keys(dateGroups).sort().reverse();
 
     // Yeni sheet verisi oluştur: başlık + tarih grupları (aralarında 3 boş satır)
-    const newSheetData: any[][] = [headerRow];
+    const newSheetData: string[][] = [headerRow];
     
     sortedDates.forEach((date, index) => {
       // Bu tarihin tüm kayıtlarını ekle
@@ -133,7 +133,7 @@ export async function upsertToSheet(rows: any[][]) {
 }
 
 // Eski append-only fonksiyonu (yedek olarak kalsın, isterseniz silebilirsiniz)
-export async function appendToSheet(rows: any[][]) {
+export async function appendToSheet(rows: string[][]) {
   try {
     const auth = getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });

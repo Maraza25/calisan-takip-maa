@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const batch = adminDb.batch();
     const dateDocRef = adminDb.collection('attendance').doc(date);
 
-    const sheetsRows: any[] = [];
+    const sheetsRows: string[][] = [];
 
     for (const entry of entries) {
       const { employeeId, status } = entry;
@@ -70,13 +70,14 @@ export async function POST(request: NextRequest) {
             added: result.added,
           },
         });
-      } catch (sheetError: any) {
+      } catch (sheetError) {
+        const err = sheetError as Error;
         console.error('Google Sheets hatası:', sheetError);
         // Firestore başarılı ama Sheets başarısız - kullanıcıya bildir ama devam et
         return NextResponse.json({
           success: true,
           warning: 'Firestore kaydedildi ancak Google Sheets güncellenemedi',
-          sheetError: sheetError.message,
+          sheetError: err.message,
         });
       }
     }
@@ -85,10 +86,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `${entries.length} kayıt başarıyla kaydedildi`,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const err = error as Error;
     console.error('POST /api/attendance/save error:', error);
     return NextResponse.json(
-      { error: 'Yoklama kaydedilirken hata oluştu', details: error.message },
+      { error: 'Yoklama kaydedilirken hata oluştu', details: err.message },
       { status: 500 }
     );
   }

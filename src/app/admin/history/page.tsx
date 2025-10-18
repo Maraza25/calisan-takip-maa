@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Employee, AttendanceEntry } from '@/types';
-import { Calendar, CheckCircle, XCircle, Filter } from 'lucide-react';
+import { Calendar, CheckCircle, XCircle } from 'lucide-react';
 
 type AttendanceWithEmployee = AttendanceEntry & {
   employee?: Employee;
@@ -98,6 +98,7 @@ export default function HistoryPage() {
     if (startDate && endDate && employees.length > 0) {
       fetchHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, endDate, selectedEmployeeId, employees]);
 
   const sortedDates = Object.keys(historyData).sort().reverse();

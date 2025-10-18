@@ -31,6 +31,7 @@ export default function AttendancePage() {
     if (selectedDate) {
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   const fetchData = async () => {
@@ -94,7 +95,7 @@ export default function AttendancePage() {
 
       // Sadece değer girilmiş olanları kaydet
       const entries = Object.entries(attendance)
-        .filter(([_, status]) => status !== null)
+        .filter(([, status]) => status !== null)
         .map(([employeeId, status]) => ({
           employeeId,
           status: status!,
@@ -126,8 +127,9 @@ export default function AttendancePage() {
         setSuccessMessage('');
         setError('');
       }, 5000);
-    } catch (err: any) {
-      setError(err.message || 'Kaydetme başarısız');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Kaydetme başarısız');
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,3 @@
-// Firebase Client SDK yapılandırması
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
@@ -11,9 +10,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton pattern - yeniden başlatmayı önle
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(app);
+// Firebase app'i initialize et (sadece bir kez)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-export { app, db };
+// Firestore instance
+export const db = getFirestore(app);
+
+export default app;
 

@@ -1,290 +1,208 @@
-# Çalışan Takip Sistemi
+# Çalışan Takip Sistemi - MAA Mimarlık
 
-MAA Mimarlık için çalışan yoklama ve yönetim sistemi. Firebase Firestore ve Google Sheets entegrasyonu ile çalışır.
+Modern ve kullanıcı dostu bir çalışan yoklama ve takip sistemi.
 
-## 🎯 Özellikler
+## 🚀 Özellikler
 
-- ✅ **Çalışan Yönetimi**: Ekle, düzenle, sil (soft delete)
-- ✅ **TC Numarası ile Benzersiz Kayıt**: Aynı TC ile tekrar ekleme yapılırsa mevcut kayıt aktive edilir
-- ✅ **Yoklama Sistemi**: Günlük ve geçmiş tarihli yoklama kaydı
-- ✅ **Geçmiş Görüntüleme**: Tarih aralığı ve çalışan filtresi ile detaylı raporlama
-- ✅ **Google Sheets Entegrasyonu**: Otomatik veri aktarımı (append-only mod)
-- ✅ **Firestore Veritabanı**: Güvenli ve hızlı veri saklama
-- ✅ **Modern UI**: Responsive, kullanıcı dostu arayüz
+### 📋 Günlük Yoklama
+- Bugünün tarihinde tüm çalışanları listele
+- Geldi/Gelmedi durumunu tek tıkla değiştir
+- Geçmiş tarihlerden yoklama görüntüle ve düzenle
+- Gerçek zamanlı güncelleme
+- Anlık istatistikler (toplam çalışan, gelen sayısı)
 
-## 🚀 Kurulum
+### 👥 Çalışan Yönetimi
+- TC Kimlik No ile doğrulama
+- Çalışan ekleme (Ad, Soyad, TC)
+- Akıllı arama (TC veya isim ile)
+- Çalışan pasifleştirme (silmeden devre dışı bırakma)
+- Pasif çalışanları tekrar aktif etme
+- Aynı TC kontrolü ve uyarı sistemi
 
-### 1. Bağımlılıkları Yükle
+### 📊 Raporlama
+- Aylık yoklama raporları
+- Her çalışan için detaylı istatistikler
+- Geldiği günlerin listesi
+- Excel (CSV) formatında dışa aktarma
+- Yazdırma desteği
+- Görsel istatistikler ve grafikler
 
+### 🎨 Arayüz
+- Modern ve kullanıcı dostu tasarım
+- Dark/Light mode desteği
+- Responsive (mobil, tablet, masaüstü)
+- Tailwind CSS ile stillendirilmiş
+- Smooth animasyonlar ve geçişler
+
+## 🛠️ Teknolojiler
+
+- **Framework:** Next.js 14 (App Router)
+- **UI:** React 18, Tailwind CSS
+- **Database:** Firebase Firestore
+- **Icons:** Lucide React
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+
+## 📦 Kurulum
+
+1. Projeyi klonlayın:
+```bash
+git clone <repository-url>
+cd calisan-takip-maa
+```
+
+2. Bağımlılıkları yükleyin:
 ```bash
 npm install
 ```
 
-### 2. Firebase Projesi Oluştur
+3. Firebase projenizi oluşturun:
+   - [Firebase Console](https://console.firebase.google.com/) üzerinden yeni bir proje oluşturun
+   - Firestore Database'i etkinleştirin
+   - Web uygulaması ekleyin ve config bilgilerini alın
 
-1. [Firebase Console](https://console.firebase.google.com/) üzerinden yeni proje oluştur
-2. **Firestore Database** oluştur:
-   - Test modunda başlat (rules: `allow read, write: if true;`)
-   - **Önemli**: Production'da güvenlik kurallarını sıkılaştırın!
-3. **Proje Ayarları** → **Genel** → Web uygulaması ekle
-4. Firebase yapılandırma değerlerini kopyala
-5. **Proje Ayarları** → **Hizmet Hesapları** → **Yeni özel anahtar oluştur**
-   - JSON dosyasını indir ve sakla
-
-### 3. Google Sheets API Kurulumu
-
-1. [Google Cloud Console](https://console.cloud.google.com/) üzerinden Firebase projenizi seç
-2. **APIs & Services** → **Enable APIs** → "Google Sheets API" etkinleştir
-3. Firebase'den indirdiğiniz service account'u kullanacaksınız (aynı credentials)
-4. Yeni bir Google Sheets dosyası oluştur:
-   - İlk satıra başlıklar: `Tarih | Çalışan ID | Ad Soyad | Durum | Kaynak | Düzenleme Zamanı`
-   - Sheets ID'yi URL'den al: `https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit`
-5. Sheets'i service account email ile paylaş (Editor yetkisi):
-   - Şu formatta: `firebase-adminsdk-xxxxx@{PROJECT_ID}.iam.gserviceaccount.com`
-
-### 4. Environment Variables
-
-`.env.local` dosyası oluştur (`.env.example` dosyasını referans al):
-
-```bash
-cp .env.example .env.local
-```
-
-Değerleri doldur:
+4. Ortam değişkenlerini ayarlayın:
+   - `.env.local` dosyası oluşturun
+   - Firebase config değerlerini ekleyin:
 
 ```env
-# Firebase Client SDK
-NEXT_PUBLIC_FIREBASE_API_KEY=xxx
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=xxx.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=xxx
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=xxx.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=xxx
-NEXT_PUBLIC_FIREBASE_APP_ID=xxx
-
-# Firebase Admin SDK
-FIREBASE_PROJECT_ID=xxx
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@xxx.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nxxx\n-----END PRIVATE KEY-----\n"
-
-# Google Sheets
-SHEET_ID=your_sheet_id_here
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-**Önemli Notlar:**
-- `FIREBASE_PRIVATE_KEY` değişkeninde `\n` karakterlerini olduğu gibi bırak
-- Çift tırnak içinde olmalı
-- Service account JSON'dan `private_key` alanını kopyala
-
-### 5. Geliştirme Sunucusunu Başlat
-
+5. Geliştirme sunucusunu başlatın:
 ```bash
 npm run dev
 ```
 
-Tarayıcıda [http://localhost:3000](http://localhost:3000) adresini aç.
+6. Tarayıcınızda açın:
+```
+http://localhost:3000
+```
 
 ## 📁 Proje Yapısı
 
 ```
 src/
-├── app/
-│   ├── admin/
-│   │   ├── employees/        # Çalışan yönetimi sayfası
-│   │   ├── attendance/       # Yoklama sayfası
-│   │   └── history/          # Geçmiş kayıtlar sayfası
-│   ├── api/
-│   │   ├── employees/        # Çalışan CRUD API
-│   │   └── attendance/       # Yoklama API
-│   │       └── save/         # Yoklama kaydetme
-│   ├── layout.tsx
-│   └── page.tsx              # Ana sayfa
-├── components/
-│   └── Navbar.tsx            # Navigasyon menüsü
-├── lib/
-│   ├── firebase.ts           # Firebase Client SDK
-│   ├── firebaseAdmin.ts      # Firebase Admin SDK
-│   └── sheets.ts             # Google Sheets API
-└── types/
-    └── index.ts              # TypeScript tipleri
+├── app/                    # Next.js App Router sayfaları
+│   ├── calisanlar/        # Çalışanlar sayfası
+│   ├── raporlar/          # Raporlar sayfası
+│   ├── layout.tsx         # Ana layout
+│   └── page.tsx           # Ana sayfa (Günlük Yoklama)
+├── components/            # React bileşenleri
+│   └── Navbar.tsx         # Navigation bar
+├── contexts/              # React Context'leri
+│   └── ThemeContext.tsx   # Dark/Light mode yönetimi
+├── lib/                   # Yardımcı fonksiyonlar ve servisler
+│   ├── firebase.ts        # Firebase yapılandırması
+│   ├── employeeService.ts # Çalışan işlemleri
+│   ├── attendanceService.ts # Yoklama işlemleri
+│   └── utils.ts           # Yardımcı fonksiyonlar
+└── types/                 # TypeScript tip tanımları
+    └── index.ts
 ```
 
-## 🗄️ Veri Modeli
+## 🔥 Firestore Koleksiyonları
 
-### Firestore Collections
-
-#### `employees/{employeeId}`
+### `employees` (Çalışanlar)
 ```typescript
 {
-  fullName: string,
-  tc: string,          // TC Kimlik No (unique)
-  isDeleted: boolean,  // Soft delete
-  createdAt: Timestamp,
-  updatedAt: Timestamp
+  tc: string,           // TC Kimlik No (11 haneli)
+  firstName: string,    // Ad
+  lastName: string,     // Soyad
+  disabled: boolean,    // Pasif mi?
+  createdAt: Timestamp, // Oluşturulma tarihi
+  updatedAt: Timestamp  // Güncellenme tarihi
 }
 ```
 
-#### `attendance/{YYYY-MM-DD}/entries/{employeeId}`
+### `attendance` (Yoklama)
 ```typescript
 {
-  employeeRef: string,         // Reference: employees/{id}
-  status: 'present' | 'absent',
-  ts: Timestamp,
-  by: string                   // Admin kullanıcı
+  employeeId: string,   // Çalışan ID'si
+  date: string,         // Tarih (YYYY-MM-DD)
+  status: 'present' | 'absent', // Durum (geldi/gelmedi)
+  createdAt: Timestamp, // Oluşturulma tarihi
+  updatedAt: Timestamp  // Güncellenme tarihi
 }
 ```
 
-### Google Sheets Format (Upsert Mode + Tarih Grupları)
+## 🎯 Kullanım
 
-```
-| Tarih      | Çalışan ID | Ad Soyad      | Durum  | Kaynak     | Düzenleme Zamanı     |
-|------------|-----------|---------------|---------|------------|---------------------|
-| 2024-01-17 | abc123    | Ahmet Yılmaz  | Geldi   | admin_save | 2024-01-17T10:30:00Z |
-| 2024-01-17 | def456    | Ayşe Kaya     | Gelmedi | admin_save | 2024-01-17T10:30:00Z |
-|            |           |               |         |            |                     | ← 3 boş satır
-|            |           |               |         |            |                     |
-|            |           |               |         |            |                     |
-| 2024-01-16 | abc123    | Ahmet Yılmaz  | Geldi   | admin_save | 2024-01-16T09:15:00Z |
-| 2024-01-16 | def456    | Ayşe Kaya     | Geldi   | admin_save | 2024-01-16T09:15:00Z |
-|            |           |               |         |            |                     | ← 3 boş satır
-|            |           |               |         |            |                     |
-|            |           |               |         |            |                     |
-| 2024-01-15 | abc123    | Ahmet Yılmaz  | Gelmedi | admin_save | 2024-01-15T08:00:00Z |
-```
+### Çalışan Ekleme
+1. "Çalışanlar" sayfasına gidin
+2. "Yeni Çalışan Ekle" butonuna tıklayın
+3. TC Kimlik No, Ad ve Soyad bilgilerini girin
+4. "Ekle" butonuna tıklayın
 
-**Upsert Yaklaşımı (Aktif):**
-- ✅ Her kaydetme/düzenleme işlemi mevcut satırı arar
-- ✅ **Aynı tarih + çalışan varsa:** O satırı günceller
-- ✅ **Yoksa:** Yeni satır ekler
-- ✅ Sheets'te her tarih+çalışan kombinasyonu tek satırda tutulur
-- ✅ **Her tarih grubu arasında 3 boş satır** - Görsel olarak daha temiz!
-- ✅ Tarihler en yeni üstte sıralanır (descending)
-- ✅ Daha temiz ve okunabilir Sheets
+**Not:** Aynı TC ile kayıtlı pasif bir çalışan varsa, sistem tekrar aktif etme seçeneği sunar.
 
-**Alternatif: Append-Only Modu**
-- İsterseniz `appendToSheet()` fonksiyonunu kullanabilirsiniz
-- Her işlem yeni satır ekler (audit trail)
-- `api/attendance/save/route.ts` içinde `upsertToSheet` yerine `appendToSheet` kullanın
-- Not: Append-only modda tarih grupları arası boşluk olmaz
+### Günlük Yoklama
+1. Ana sayfada bugünün tarihi otomatik seçilidir
+2. Her çalışan için "Geldi" veya "Gelmedi" butonuna tıklayın
+3. Değişiklikler anında kaydedilir
+4. Tarih seçerek geçmiş günleri görüntüleyebilirsiniz
 
-## 🔐 Güvenlik
+### Rapor Alma
+1. "Raporlar" sayfasına gidin
+2. Ay ve yıl seçin
+3. "Excel İndir" ile CSV formatında indirebilirsiniz
+4. "Yazdır" ile doğrudan yazdırabilirsiniz
 
-⚠️ **Bu test sürümüdür!** Production kullanımı için:
+## 🔒 Güvenlik
 
-### Firestore Security Rules
+- Tüm Firestore işlemleri client-side yapılır
+- Firebase Security Rules'u ayarlamayı unutmayın
+- Üretim ortamında mutlaka güvenlik kuralları ekleyin
 
+### Örnek Firestore Security Rules:
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Test modu - PRODUCTION'DA DEĞİŞTİR!
-    match /{document=**} {
-      allow read, write: if true;
+    match /employees/{document=**} {
+      allow read, write: if true; // TODO: Auth eklendiğinde değiştir
     }
-    
-    // Production için örnek:
-    // match /employees/{employeeId} {
-    //   allow read: if request.auth != null;
-    //   allow write: if request.auth != null && request.auth.token.admin == true;
-    // }
+    match /attendance/{document=**} {
+      allow read, write: if true; // TODO: Auth eklendiğinde değiştir
+    }
   }
 }
 ```
 
-### Öneriler
+## 📝 Notlar
 
-1. **Authentication Ekle**: Firebase Authentication ile kullanıcı girişi
-2. **Admin Kontrolü**: Custom claims ile admin rolü
-3. **Rate Limiting**: API route'larına rate limit ekle
-4. **CORS Ayarları**: Production domain'leri beyaz listeye al
-5. **Env Gizliliği**: `.env.local` asla commit etme (`.gitignore`'da var)
+- TC Kimlik No doğrulaması yapılır (algoritma kontrolü)
+- Çalışanlar silinmez, sadece pasifleştirilir
+- Pasif çalışanlar geçmiş raporlarda görünür
+- Tüm tarihler Türkiye saat diliminde saklanır
+- Excel export UTF-8 BOM ile yapılır (Türkçe karakter desteği)
 
-## 📝 Kullanım
+## 🚀 Production Build
 
-### 1. Çalışan Ekle
-
-1. **Çalışan Havuzu** sayfasına git
-2. **Yeni Çalışan** butonuna tıkla
-3. Ad Soyad ve TC Kimlik No gir
-4. **Ekle** butonuna tıkla
-
-**Not:** Aynı TC ile tekrar ekleme yapılırsa:
-- Mevcut kayıt silinmiş ise → Kayıt aktive edilir (`isDeleted=false`)
-- Mevcut kayıt aktif ise → Hata mesajı gösterilir
-
-### 2. Yoklama Al
-
-1. **Yoklama** sayfasına git
-2. Tarih seçici ile istediğin tarihi seç (varsayılan: bugün)
-3. Her çalışan için durumu seç:
-   - Seçilmedi (varsayılan)
-   - Geldi (yeşil)
-   - Gelmedi (kırmızı)
-4. **Kaydet** butonuna tıkla
-
-### 3. Geçmiş Görüntüle
-
-1. **Geçmiş** sayfasına git
-2. Başlangıç ve bitiş tarihi seç
-3. İsteğe bağlı: Belirli bir çalışan filtrele
-4. Kayıtlar otomatik yüklenecek
-
-## 🛠️ Geliştirme
-
-### Build & Deploy
+Üretim için build almak:
 
 ```bash
-# Production build
 npm run build
-
-# Production server başlat
 npm start
-
-# Lint kontrol
-npm run lint
 ```
-
-### Vercel Deploy
-
-1. Projeyi GitHub'a push et
-2. [Vercel](https://vercel.com/) hesabınla bağlan
-3. Proje import et
-4. Environment Variables ekle (`.env.local` içeriği)
-5. Deploy et
-
-## 🐛 Sorun Giderme
-
-### Firebase Admin SDK Hatası
-
-**Hata:** `Error: Failed to parse private key`
-
-**Çözüm:**
-- `.env.local` dosyasında `FIREBASE_PRIVATE_KEY` çift tırnak içinde olmalı
-- `\n` karakterlerini olduğu gibi kopyala (gerçek newline değil)
-
-### Google Sheets Hatası
-
-**Hata:** `Permission denied` veya `Requested entity was not found`
-
-**Çözüm:**
-1. Sheets ID doğru mu kontrol et
-2. Service account email ile Sheets'i paylaşmayı unutma
-3. Google Sheets API'nin etkin olduğunu doğrula
-
-### Firestore Bağlantı Hatası
-
-**Çözüm:**
-1. Firebase proje ID'nin doğru olduğunu kontrol et
-2. Firestore Database'in oluşturulduğundan emin ol
-3. Test modunda rules'ların `allow read, write: if true;` olduğunu doğrula
 
 ## 📄 Lisans
 
-Bu proje MAA Mimarlık için özel olarak geliştirilmiştir.
+Bu proje MAA Mimarlık için geliştirilmiştir.
 
-## 🤝 Destek
+## 🤝 Katkıda Bulunma
 
-Sorularınız için: [İletişim Bilgileri]
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'feat: Add amazing feature'`)
+4. Push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request açın
 
----
+## 📞 İletişim
 
-**Geliştirici Notu:** Bu sistem test sürümüdür. Production ortamında kullanmadan önce güvenlik ayarlarını mutlaka sıkılaştırın!
+Sorularınız için: [email protected]

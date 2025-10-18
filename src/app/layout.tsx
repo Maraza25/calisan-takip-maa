@@ -11,8 +11,9 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  weight: "100 900",
+  weight: "100 800",
 });
+
 
 export const metadata: Metadata = {
   title: "Çalışan Takip Sistemi",

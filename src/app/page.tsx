@@ -103,7 +103,7 @@ export default function Home() {
               <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={20} />
               <div>
                 <h4 className="font-semibold text-gray-800">Google Sheets Entegrasyonu</h4>
-                <p className="text-sm text-gray-600">Tüm yoklama kayıtları otomatik olarak Google Sheets'e aktarılır.</p>
+                <p className="text-sm text-gray-600">Tüm yoklama kayıtları otomatik olarak Google Sheets&apos;e aktarılır.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">

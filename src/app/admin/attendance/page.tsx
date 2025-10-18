@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Employee, AttendanceEntry } from '@/types';
 import { Calendar, Save, CheckCircle, XCircle } from 'lucide-react';
@@ -10,6 +10,15 @@ type AttendanceState = {
 };
 
 export default function AttendancePage() {
+
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center"><div className="text-gray-500">Yükleniyor...</div></div>}>
+      <AttendanceContent />
+    </Suspense>
+  );
+}
+
+function AttendanceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedDate, setSelectedDate] = useState('');

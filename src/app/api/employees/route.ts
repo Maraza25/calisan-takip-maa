@@ -9,12 +9,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const includeDeleted = searchParams.get('includeDeleted') === 'true';
 
-    let query = adminDb.collection('employees');
-
     // Silinmişleri hariç tut (varsayılan)
-    if (!includeDeleted) {
-      query = query.where('isDeleted', '!=', true) as FirebaseFirestore.Query<FirebaseFirestore.DocumentData>;
-    }
+    const query = includeDeleted
+      ? adminDb.collection('employees')
+      : adminDb.collection('employees').where('isDeleted', '!=', true);
 
     const snapshot = await query.orderBy('createdAt', 'desc').get();
 
@@ -57,12 +55,6 @@ export async function POST(request: NextRequest) {
       .get();
 
     const now = FieldValue.serverTimestamp();
-    type UpdateData = {
-      fullName?: string;
-      tc?: string;
-      isDeleted?: boolean;
-      updatedAt: FirebaseFirestore.FieldValue;
-    };
 
     if (!existingQuery.empty) {
       // Var olan kaydı aktive et
@@ -129,7 +121,11 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const updateData: any = {
+    const updateData: {
+      updatedAt: FirebaseFirestore.FieldValue;
+      fullName?: string;
+      tc?: string;
+    } = {
       updatedAt: FieldValue.serverTimestamp(),
     };
 

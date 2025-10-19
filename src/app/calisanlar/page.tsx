@@ -25,6 +25,7 @@ export default function EmployeesPage() {
   const [tc, setTc] = useState('');
   const [fullName, setFullName] = useState('');
   const [formError, setFormError] = useState('');
+  const [formWarning, setFormWarning] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
   // Reactivation modal state
@@ -68,6 +69,7 @@ export default function EmployeesPage() {
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFormWarning('');
 
     // Validasyon
     if (!tc || !fullName.trim()) {
@@ -75,9 +77,9 @@ export default function EmployeesPage() {
       return;
     }
 
+    // TC numarası geçersizse uyarı göster ama devam et
     if (!validateTC(tc)) {
-      setFormError('Geçerli bir TC Kimlik numarası girin.');
-      return;
+      setFormWarning('Bu TC Kimlik numarası geçerli değil, ancak yine de kaydedilebilir.');
     }
 
     setFormLoading(true);
@@ -106,6 +108,7 @@ export default function EmployeesPage() {
       // Formu temizle ve listeyi yenile
       setTc('');
       setFullName('');
+      setFormWarning('');
       setShowAddForm(false);
       await loadEmployees();
     } catch (error) {
@@ -128,6 +131,7 @@ export default function EmployeesPage() {
       setExistingEmployee(null);
       setTc('');
       setFullName('');
+      setFormWarning('');
       setShowAddForm(false);
       
       await loadEmployees();
@@ -200,6 +204,7 @@ export default function EmployeesPage() {
         onClose={() => {
           setShowAddForm(false);
           setFormError('');
+          setFormWarning('');
           setTc('');
           setFullName('');
         }}
@@ -214,6 +219,13 @@ export default function EmployeesPage() {
               </div>
             )}
 
+            {formWarning && (
+              <div className="flex items-start gap-2 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">{formWarning}</p>
+              </div>
+            )}
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -222,7 +234,10 @@ export default function EmployeesPage() {
                 <input
                   type="text"
                   value={tc}
-                  onChange={(e) => setTc(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                  onChange={(e) => {
+                    setTc(e.target.value.replace(/\D/g, '').slice(0, 11));
+                    setFormWarning(''); // TC değiştiğinde uyarıyı temizle
+                  }}
                   placeholder="12345678901"
                   maxLength={11}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -256,6 +271,7 @@ export default function EmployeesPage() {
                 onClick={() => {
                   setShowAddForm(false);
                   setFormError('');
+                  setFormWarning('');
                   setTc('');
                   setFullName('');
                 }}

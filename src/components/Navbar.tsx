@@ -13,7 +13,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { href: '/', label: 'Yoklama', icon: ClipboardList },
+    { href: '/yoklama', label: 'Yoklama', icon: ClipboardList },
     { href: '/calisanlar', label: 'Çalışanlar', icon: Users },
     { href: '/raporlar', label: 'Raporlar', icon: BarChart3 },
   ];

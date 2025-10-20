@@ -73,12 +73,20 @@ export default function ReportsPage() {
   const handleExportExcel = () => {
     // CSV formatında veri oluştur
     const headers = ['Ad Soyad', 'TC Kimlik No', 'Toplam Gün', 'Geldiği Günler'];
-    const rows = report.map((item) => [
-      item.employeeName + (item.isDisabled ? ' (pasif)' : ''),
-      item.tc,
-      item.totalDays.toString(),
-      item.presentDates.join(', '),
-    ]);
+    const rows = report.map((item) => {
+      // Tarihleri GG.AA.YYYY formatına çevir
+      const formattedDates = item.presentDates.map(date => {
+        const [year, month, day] = date.split('-');
+        return `${day}.${month}.${year}`;
+      }).join(', ');
+
+      return [
+        item.employeeName + (item.isDisabled ? ' (pasif)' : ''),
+        item.tc,
+        item.totalDays.toString(),
+        formattedDates,
+      ];
+    });
 
     const csvData = [headers, ...rows];
     const csv = generateCSV(csvData);

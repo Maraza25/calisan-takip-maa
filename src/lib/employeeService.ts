@@ -7,14 +7,27 @@ import {
   updateDoc, 
   doc,
   orderBy,
-  Timestamp 
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Employee } from '@/types';
 
 const EMPLOYEES_COLLECTION = 'employees';
 
-// Tüm çalışanları getir
+const mapEmployee = (document: any): Employee => {
+  const data = document.data();
+  return {
+    id: document.id,
+    tc: data.tc,
+    fullName: data.fullName,
+    siteId: data.siteId || '',
+    disabled: data.disabled || false,
+    createdAt: data.createdAt?.toDate() || new Date(),
+    updatedAt: data.updatedAt?.toDate() || new Date(),
+  };
+};
+
+// Tüm çalışanları getir (site filtresi olmadan)
 export const getAllEmployees = async (): Promise<Employee[]> => {
   const q = query(
     collection(db, EMPLOYEES_COLLECTION),
@@ -22,70 +35,56 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
   );
   
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      tc: data.tc,
-      fullName: data.fullName,
-      disabled: data.disabled || false,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
-    } as Employee;
-  });
+  return snapshot.docs.map(mapEmployee);
 };
 
-// Aktif çalışanları getir
-export const getActiveEmployees = async (): Promise<Employee[]> => {
+// Belirli bir şantiyedeki çalışanları getir
+export const getEmployeesBySite = async (siteId: string): Promise<Employee[]> => {
+  const q = query(collection(db, EMPLOYEES_COLLECTION), where('siteId', '==', siteId));
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(mapEmployee)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+};
+
+// Aktif çalışanları getir (belirli şantiyede)
+export const getActiveEmployeesBySite = async (siteId: string): Promise<Employee[]> => {
   const q = query(
     collection(db, EMPLOYEES_COLLECTION),
-    where('disabled', '==', false),
-    orderBy('createdAt', 'desc')
+    where('siteId', '==', siteId),
+    where('disabled', '==', false)
   );
   
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      tc: data.tc,
-      fullName: data.fullName,
-      disabled: data.disabled || false,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
-    } as Employee;
-  });
+  return snapshot.docs
+    .map(mapEmployee)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 };
 
-// TC'ye göre çalışan ara
-export const getEmployeeByTC = async (tc: string): Promise<Employee | null> => {
+// TC'ye göre çalışan ara (şantiye bazlı)
+export const getEmployeeByTC = async (siteId: string, tc: string): Promise<Employee | null> => {
   const q = query(
     collection(db, EMPLOYEES_COLLECTION),
+    where('siteId', '==', siteId),
     where('tc', '==', tc)
   );
   
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
   
-  const doc = snapshot.docs[0];
-  const data = doc.data();
-  return {
-    id: doc.id,
-    tc: data.tc,
-    fullName: data.fullName,
-    disabled: data.disabled || false,
-    createdAt: data.createdAt?.toDate() || new Date(),
-    updatedAt: data.updatedAt?.toDate() || new Date(),
-  } as Employee;
+  return mapEmployee(snapshot.docs[0]);
 };
 
 // Çalışan ekle
 export const addEmployee = async (
+  siteId: string,
   tc: string,
   fullName: string
 ): Promise<Employee> => {
   const now = Timestamp.now();
   const docRef = await addDoc(collection(db, EMPLOYEES_COLLECTION), {
+    siteId,
     tc,
     fullName,
     disabled: false,
@@ -97,6 +96,7 @@ export const addEmployee = async (
     id: docRef.id,
     tc,
     fullName,
+    siteId,
     disabled: false,
     createdAt: now.toDate(),
     updatedAt: now.toDate(),
@@ -133,21 +133,19 @@ export const updateEmployee = async (
   });
 };
 
-// Arama (TC veya isim)
-export const searchEmployees = async (searchTerm: string): Promise<Employee[]> => {
-  const allEmployees = await getAllEmployees();
+// Arama (TC veya isim) - şantiye bazlı
+export const searchEmployees = async (siteId: string, searchTerm: string): Promise<Employee[]> => {
+  const employees = await getEmployeesBySite(siteId);
   
   const lowerSearchTerm = searchTerm.toLowerCase().trim();
   const isNumeric = /^\d+$/.test(searchTerm);
   
-  return allEmployees.filter(employee => {
+  return employees.filter(employee => {
     if (isNumeric) {
-      // Sayı ise TC'ye göre ara
       return employee.tc.includes(searchTerm);
-    } else {
-      // Harf ise isme göre ara
-      return employee.fullName.toLowerCase().includes(lowerSearchTerm);
     }
+    return employee.fullName.toLowerCase().includes(lowerSearchTerm);
   });
 };
+
 

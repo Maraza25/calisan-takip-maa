@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Download, Printer } from 'lucide-react';
-import { getAllEmployees } from '@/lib/employeeService';
+import { Download, Printer, Building2, Link as LinkIcon } from 'lucide-react';
+import Link from 'next/link';
 import { getAttendanceByDateRange } from '@/lib/attendanceService';
 import { AttendanceRecord, MonthlyReport } from '@/types';
 import { formatDateTurkish, getMonthRange, getDaysInMonth, generateCSV, downloadCSV, cn } from '@/lib/utils';
+import { useSite } from '@/contexts/SiteContext';
+import { getEmployeesBySite } from '@/lib/employeeService';
 
 const MONTHS = [
   'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -13,6 +15,7 @@ const MONTHS = [
 ];
 
 export default function ReportsPage() {
+  const { selectedSite, selectedSiteId } = useSite();
   const currentDate = new Date();
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
@@ -20,17 +23,22 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
 
   const generateReport = useCallback(async () => {
+    if (!selectedSiteId) {
+      setReport([]);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Çalışanları ve yoklama verilerini getir
+      // Şantiyeye özel çalışanları ve yoklama verilerini getir
       const monthRange = getMonthRange(selectedYear, selectedMonth);
-      const [employeesData, attendanceData] = await Promise.all([
-        getAllEmployees(),
-        getAttendanceByDateRange(monthRange.start, monthRange.end),
+      const [employees, attendanceData] = await Promise.all([
+        getEmployeesBySite(selectedSiteId),
+        getAttendanceByDateRange(selectedSiteId, monthRange.start, monthRange.end),
       ]);
 
       // Her çalışan için rapor oluştur
-      const reportData: MonthlyReport[] = employeesData.map((employee) => {
+      const reportData: MonthlyReport[] = employees.map((employee) => {
         // Bu çalışanın yoklama kayıtlarını filtrele
         const employeeAttendance = attendanceData.filter(
           (record: AttendanceRecord) => record.employeeId === employee.id
@@ -52,6 +60,7 @@ export default function ReportsPage() {
           totalDays: presentRecords.length,
           presentDates,
           isDisabled: employee.disabled,
+          siteId: selectedSiteId,
         };
       });
 
@@ -64,15 +73,17 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, selectedSiteId]);
 
   useEffect(() => {
     generateReport();
   }, [generateReport]);
 
   const handleExportExcel = () => {
+    if (!selectedSiteId) return;
+
     // CSV formatında veri oluştur
-    const headers = ['Ad Soyad', 'TC Kimlik No', 'Toplam Gün', 'Geldiği Günler'];
+    const headers = ['Şantiye', 'Ad Soyad', 'TC Kimlik No', 'Toplam Gün', 'Geldiği Günler'];
     const rows = report.map((item) => {
       // Tarihleri GG.AA.YYYY formatına çevir
       const formattedDates = item.presentDates.map(date => {
@@ -81,6 +92,7 @@ export default function ReportsPage() {
       }).join(', ');
 
       return [
+        selectedSite?.name ?? '',
         item.employeeName + (item.isDisabled ? ' (pasif)' : ''),
         item.tc,
         item.totalDays.toString(),
@@ -92,11 +104,13 @@ export default function ReportsPage() {
     const csv = generateCSV(csvData);
 
     // Dosya adı
-    const fileName = `${MONTHS[selectedMonth]}_${selectedYear}_Yoklama_Raporu.csv`;
+    const siteSlug = selectedSite?.name?.replace(/\s+/g, '_') ?? 'Santiye';
+    const fileName = `${siteSlug}_${MONTHS[selectedMonth]}_${selectedYear}_Yoklama_Raporu.csv`;
     downloadCSV(csv, fileName);
   };
 
   const handlePrint = () => {
+    if (!selectedSiteId) return;
     window.print();
   };
 
@@ -113,6 +127,31 @@ export default function ReportsPage() {
     ? (activeEmployees.reduce((sum, item) => sum + item.totalDays, 0) / activeEmployees.length).toFixed(1)
     : 0;
 
+  if (!selectedSiteId) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-8 text-center space-y-4">
+        <div className="flex justify-center">
+          <Building2 className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Şantiye Seçilmedi
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+          Şantiye bazlı rapor oluşturmak için üst menüden bir şantiye seçin veya yeni bir şantiye oluşturun.
+        </p>
+        <div className="flex justify-center gap-3">
+          <Link
+            href="/santiyeler"
+            className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Şantiye Oluştur / Seç
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Başlık ve Kontroller */}
@@ -120,7 +159,7 @@ export default function ReportsPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Aylık Yoklama Raporu
+              {selectedSite ? `${selectedSite.name} - ` : ''}Aylık Yoklama Raporu
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {MONTHS[selectedMonth]} {selectedYear}
@@ -216,7 +255,7 @@ export default function ReportsPage() {
       {/* Yazdırma için başlık */}
       <div className="hidden print:block mb-4">
         <h1 className="text-2xl font-bold text-center mb-2">
-          {MONTHS[selectedMonth]} {selectedYear} Yoklama Raporu
+          {selectedSite?.name} - {MONTHS[selectedMonth]} {selectedYear} Yoklama Raporu
         </h1>
         <p className="text-center text-gray-600">
           MAA Mimarlık Çalışan Takip Sistemi
@@ -323,4 +362,5 @@ export default function ReportsPage() {
     </div>
   );
 }
+
 

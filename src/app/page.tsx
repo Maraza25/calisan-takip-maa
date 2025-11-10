@@ -1,14 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { Users, ClipboardCheck, BarChart3, Shield, Clock, FileSpreadsheet, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Users, ClipboardCheck, BarChart3, Shield, Clock, FileSpreadsheet, CheckCircle2, ArrowRight, Building2 } from 'lucide-react';
+import { useSite } from '@/contexts/SiteContext';
 
 export default function HomePage() {
+  const { selectedSite, sites } = useSite();
   const features = [
+    {
+      icon: Building2,
+      title: 'Şantiye Yönetimi',
+      description: 'Birden fazla şantiye oluşturun, ustaları ve yöneticileri görevlendirin',
+      link: '/santiyeler',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+    },
     {
       icon: ClipboardCheck,
       title: 'Günlük Yoklama',
-      description: 'Çalışanlarınızın günlük yoklamasını kolayca alın ve takip edin',
+      description: 'Her şantiye için günlük yoklamayı ayrı ayrı yönetin ve takip edin',
       link: '/yoklama',
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/20',
@@ -24,7 +34,7 @@ export default function HomePage() {
     {
       icon: BarChart3,
       title: 'Detaylı Raporlar',
-      description: 'Aylık yoklama raporlarını görüntüleyin, yazdırın veya Excel olarak indirin',
+      description: 'Şantiye bazlı aylık yoklama raporlarını görüntüleyin, yazdırın veya Excel olarak indirin',
       link: '/raporlar',
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/20',
@@ -58,14 +68,22 @@ export default function HomePage() {
         </div>
         
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white">
-          Çalışan Takip Sistemi
+          Şantiye Bazlı Çalışan Takip Sistemi
         </h1>
         
         <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          MAA Mimarlık için özel olarak tasarlanmış modern ve kullanıcı dostu çalışan yoklama sistemi
+          MAA Mimarlık için özel olarak tasarlanmış, tüm şantiyelerinizi tek panelden yöneteceğiniz modern çalışan takip sistemi
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <Link
+            href="/santiyeler"
+            className="inline-flex items-center px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            Şantiye Oluştur
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Link>
+
           <Link
             href="/yoklama"
             className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl"
@@ -78,10 +96,49 @@ export default function HomePage() {
             href="/calisanlar"
             className="inline-flex items-center px-8 py-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-semibold text-lg transition-all hover:scale-105 shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700"
           >
-            Çalışanları Görüntüle
+            Çalışan Havuzuna Git
           </Link>
         </div>
       </section>
+
+      {sites.length > 0 && (
+        <section className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-6 md:p-8 border border-gray-100 dark:border-gray-700">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-orange-100 dark:bg-orange-900/30">
+                <Building2 className="w-7 h-7 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {selectedSite ? selectedSite.name : 'Aktif Şantiye Seçili Değil'}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {selectedSite
+                    ? 'Seçili şantiye için yoklama ve rapor işlemlerini üst menüden yönetebilirsiniz.'
+                    : 'Üst menüden bir şantiye seçerek yoklama ve raporları yönetmeye başlayın.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {sites.length}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Toplam Şantiye
+                </div>
+              </div>
+              <Link
+                href="/santiyeler"
+                className="inline-flex items-center px-5 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+              >
+                Şantiyeleri Yönet
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section className="space-y-8">

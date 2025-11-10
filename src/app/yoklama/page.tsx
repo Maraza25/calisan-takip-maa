@@ -1,30 +1,40 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Calendar, Check, X } from 'lucide-react';
-import { getAllEmployees } from '@/lib/employeeService';
+import { Calendar, Check, X, Building2, Link as LinkIcon } from 'lucide-react';
+import Link from 'next/link';
 import { getAttendanceByDate, setAttendance, initializeAttendanceForDate } from '@/lib/attendanceService';
-import { Employee, AttendanceRecord } from '@/types';
+import { AttendanceRecord, Employee } from '@/types';
 import { formatDate, formatDateTurkish } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { useSite } from '@/contexts/SiteContext';
+import { getEmployeesBySite } from '@/lib/employeeService';
 
 export default function HomePage() {
+  const { selectedSite, selectedSiteId } = useSite();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [siteEmployees, setSiteEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendanceState] = useState<Record<string, 'present' | 'absent'>>({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
 
   // Çalışanları ve yoklama verilerini yükle
   const loadData = useCallback(async () => {
+    if (!selectedSiteId) {
+      setSiteEmployees([]);
+      setAttendanceState({});
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const [employeesData, attendanceData] = await Promise.all([
-        getAllEmployees(),
-        getAttendanceByDate(formatDate(selectedDate)),
+        getEmployeesBySite(selectedSiteId),
+        getAttendanceByDate(selectedSiteId, formatDate(selectedDate)),
       ]);
 
-      setEmployees(employeesData);
+      setSiteEmployees(employeesData);
 
       // Yoklama verilerini map'e çevir
       const attendanceMap: Record<string, 'present' | 'absent'> = {};
@@ -34,12 +44,12 @@ export default function HomePage() {
 
       // Henüz kaydı olmayan çalışanlar için varsayılan olarak 'absent'
       const allEmployeeIds = employeesData.map(e => e.id);
-      await initializeAttendanceForDate(formatDate(selectedDate), allEmployeeIds);
+      await initializeAttendanceForDate(selectedSiteId, formatDate(selectedDate), allEmployeeIds);
 
       // Kayıt eksik olanları da 'absent' olarak ekle
-      employeesData.forEach(emp => {
-        if (!attendanceMap[emp.id]) {
-          attendanceMap[emp.id] = 'absent';
+      employeesData.forEach((employee) => {
+        if (!attendanceMap[employee.id]) {
+          attendanceMap[employee.id] = 'absent';
         }
       });
 
@@ -49,13 +59,15 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, selectedSiteId]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const handleToggleAttendance = async (employeeId: string, currentStatus: 'present' | 'absent') => {
+    if (!selectedSiteId) return;
+
     const newStatus = currentStatus === 'present' ? 'absent' : 'present';
     
     // Optimistic update
@@ -67,7 +79,7 @@ export default function HomePage() {
     setUpdating(employeeId);
 
     try {
-      await setAttendance(employeeId, formatDate(selectedDate), newStatus);
+      await setAttendance(selectedSiteId, employeeId, formatDate(selectedDate), newStatus);
     } catch (error) {
       console.error('Yoklama güncellenirken hata:', error);
       // Hata durumunda geri al
@@ -87,8 +99,33 @@ export default function HomePage() {
   };
 
   const presentCount = Object.values(attendance).filter(s => s === 'present').length;
-  const activeEmployees = employees.filter(e => !e.disabled);
-  const inactiveEmployees = employees.filter(e => e.disabled);
+  const activeEmployees = siteEmployees.filter(e => !e.disabled);
+  const inactiveEmployees = siteEmployees.filter(e => e.disabled);
+
+  if (!selectedSiteId) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-8 text-center space-y-4">
+        <div className="flex justify-center">
+          <Building2 className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Şantiye Seçilmedi
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+          Yoklama alabilmek için üst menüden bir şantiye seçin veya yeni bir şantiye oluşturun.
+        </p>
+        <div className="flex justify-center gap-3">
+          <Link
+            href="/santiyeler"
+            className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Şantiye Oluştur / Seç
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -105,7 +142,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Günlük Yoklama
+              {selectedSite ? `${selectedSite.name} - ` : ''}Günlük Yoklama
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {formatDateTurkish(selectedDate)}
@@ -167,9 +204,7 @@ export default function HomePage() {
                   <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
                     {employee.fullName}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    TC: {employee.tc}
-                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">TC: {employee.tc}</div>
                 </div>
 
                 <button

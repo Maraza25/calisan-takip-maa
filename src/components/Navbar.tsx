@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Moon, Sun, Users, ClipboardList, BarChart3, Menu, X } from 'lucide-react';
+import { Moon, Sun, Users, ClipboardList, BarChart3, Menu, X, Building2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import SiteSelector from '@/components/SiteSelector';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -13,6 +14,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
+    { href: '/santiyeler', label: 'Şantiyeler', icon: Building2 },
     { href: '/yoklama', label: 'Yoklama', icon: ClipboardList },
     { href: '/calisanlar', label: 'Çalışanlar', icon: Users },
     { href: '/raporlar', label: 'Raporlar', icon: BarChart3 },
@@ -55,7 +57,8 @@ export default function Navbar() {
           </div>
           
           {/* Sağ taraf butonları */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <SiteSelector className="hidden md:flex" />
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -89,6 +92,9 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-3 space-y-1 border-t border-gray-200 dark:border-gray-700">
+            <div className="px-3 pb-3">
+              <SiteSelector />
+            </div>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;

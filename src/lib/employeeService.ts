@@ -8,24 +8,34 @@ import {
   doc,
   orderBy,
   Timestamp,
+  type QueryDocumentSnapshot,
+  type DocumentData,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Employee } from '@/types';
 
 const EMPLOYEES_COLLECTION = 'employees';
 
-const mapEmployee = (document: any): Employee => {
-  const data = document.data();
+const mapEmployee = (document: FirebaseDocument): Employee => {
+  const data = document.data() as {
+    tc?: string;
+    fullName?: string;
+    siteId?: string;
+    disabled?: boolean;
+    createdAt?: { toDate: () => Date };
+    updatedAt?: { toDate: () => Date };
+  };
   return {
     id: document.id,
-    tc: data.tc,
-    fullName: data.fullName,
+    tc: data.tc ?? '',
+    fullName: data.fullName ?? '',
     siteId: data.siteId || '',
     disabled: data.disabled || false,
     createdAt: data.createdAt?.toDate() || new Date(),
     updatedAt: data.updatedAt?.toDate() || new Date(),
   };
 };
+type FirebaseDocument = QueryDocumentSnapshot<DocumentData, DocumentData>;
 
 // Tüm çalışanları getir (site filtresi olmadan)
 export const getAllEmployees = async (): Promise<Employee[]> => {

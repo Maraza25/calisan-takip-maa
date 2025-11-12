@@ -258,7 +258,7 @@ export default function ReportsPage() {
           {selectedSite?.name} - {MONTHS[selectedMonth]} {selectedYear} Yoklama Raporu
         </h1>
         <p className="text-center text-gray-600">
-          MAA Mimarlık Çalışan Takip Sistemi
+          SMD İnşaat Çalışan Takip Sistemi
         </p>
       </div>
 

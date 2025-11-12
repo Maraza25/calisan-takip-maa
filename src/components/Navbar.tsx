@@ -28,7 +28,7 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center">
               <span className="text-base font-bold text-gray-900 dark:text-white">
-                MAA Çalışan Takip
+                SMD Çalışan Takip
               </span>
             </Link>
             

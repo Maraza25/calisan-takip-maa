@@ -30,7 +30,7 @@ const geistMono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Çalışan Takip Sistemi - MAA Mimarlık',
+  title: 'Çalışan Takip Sistemi - SMD İnşaat',
   description: 'Çalışan yoklama ve takip sistemi',
 }
 

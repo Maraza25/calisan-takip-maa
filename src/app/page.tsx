@@ -72,7 +72,7 @@ export default function HomePage() {
         </h1>
         
         <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          MAA Mimarlık için özel olarak tasarlanmış, tüm şantiyelerinizi tek panelden yöneteceğiniz modern çalışan takip sistemi
+          SMD İnşaat için özel olarak tasarlanmış, tüm şantiyelerinizi tek panelden yöneteceğiniz modern çalışan takip sistemi
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
